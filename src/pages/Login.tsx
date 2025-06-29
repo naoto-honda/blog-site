@@ -119,12 +119,32 @@ const Login = () => {
 
     try {
       // アクションURLを指定してパスワードリセットメールを送信
+      const baseUrl = window.location.origin;
       const actionCodeSettings = {
-        url: window.location.origin + '/login', // リセット後のリダイレクト先
+        url: `${baseUrl}/reset-password`, // リセットページにリダイレクト
         handleCodeInApp: false,
+        // iOS/Androidアプリでの処理を無効化
+        iOS: {
+          bundleId: 'com.example.blogapp',
+        },
+        android: {
+          packageName: 'com.example.blogapp',
+          installApp: true,
+          minimumVersion: '12',
+        },
+        // 動的リンクの設定
+        dynamicLinkDomain: undefined,
       };
 
-      await sendPasswordResetEmail(auth, resetEmail, actionCodeSettings);
+      try {
+        // まずアクションURL付きで試行
+        await sendPasswordResetEmail(auth, resetEmail, actionCodeSettings);
+      } catch (actionUrlError: any) {
+        console.warn('Action URL failed, trying without:', actionUrlError);
+        // アクションURLなしで再試行
+        await sendPasswordResetEmail(auth, resetEmail);
+      }
+
       console.log('Password reset email sent successfully');
       setResetMessage(
         'パスワード再設定用のメールを送信しました。メールボックスと迷惑メールフォルダをご確認ください。'
@@ -150,6 +170,25 @@ const Login = () => {
         setResetMessage(
           'ネットワークエラーが発生しました。インターネット接続を確認してください。'
         );
+      } else if (error.code === 'auth/unauthorized-continue-uri') {
+        setResetMessage(
+          'ドメインが許可されていません。管理者にお問い合わせください。'
+        );
+      } else if (error.code === 'auth/invalid-continue-uri') {
+        setResetMessage(
+          '無効なリダイレクトURLです。管理者にお問い合わせください。'
+        );
+      } else if (error.code === 'auth/api-key-not-valid') {
+        setResetMessage('APIキーが無効です。管理者にお問い合わせください。');
+        console.error('API Key Error Details:', {
+          errorCode: error.code,
+          errorMessage: error.message,
+          firebaseConfig: {
+            apiKey: '***',
+            authDomain: 'my-blog-app-d10b4.firebaseapp.com',
+            projectId: 'my-blog-app-d10b4',
+          },
+        });
       } else {
         setResetMessage(
           `パスワード再設定メールの送信に失敗しました。エラー: ${error.message}`

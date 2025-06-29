@@ -92,6 +92,18 @@ const Header = () => {
           </Button>
           <Button
             color="inherit"
+            component={RouterLink as React.ElementType}
+            to="/admin-contacts"
+            sx={{
+              '&:hover': {
+                textDecoration: 'underline',
+              },
+            }}
+          >
+            Admin
+          </Button>
+          <Button
+            color="inherit"
             onClick={handleLogout}
             sx={{
               '&:hover': {

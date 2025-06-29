@@ -7,25 +7,23 @@ import {
 } from 'firebase/auth';
 import { collection, getFirestore } from 'firebase/firestore';
 
-// 環境変数からFirebase設定を取得
+// Firebase設定（本番環境では環境変数を使用）
 const firebaseConfig = {
-  apiKey:
-    import.meta.env.VITE_FIREBASE_API_KEY ||
-    'AIzaSyBq3ySJQFFr14cjGCn-4dizZD6YvgVNDbg',
-  authDomain:
-    import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ||
-    'my-blog-app-d10b4.firebaseapp.com',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'my-blog-app-d10b4',
-  storageBucket:
-    import.meta.env.VITE_FIREBASE_STORAGE_BUCKET ||
-    'my-blog-app-d10b4.firebasestorage.app',
-  messagingSenderId:
-    import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '210864260533',
-  appId:
-    import.meta.env.VITE_FIREBASE_APP_ID ||
-    '1:210864260533:web:9e365c88173f9bc65ec5fc',
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-K9V1N9MQTM',
+  apiKey: 'AIzaSyBq3ySJQFFr14cjGCn-4dizZD6YvgVNDbg',
+  authDomain: 'my-blog-app-d10b4.firebaseapp.com',
+  projectId: 'my-blog-app-d10b4',
+  storageBucket: 'my-blog-app-d10b4.firebasestorage.app',
+  messagingSenderId: '210864260533',
+  appId: '1:210864260533:web:9e365c88173f9bc65ec5fc',
+  measurementId: 'G-K9V1N9MQTM',
 };
+
+// 開発環境でのデバッグ用
+console.log('Firebase Config:', {
+  apiKey: firebaseConfig.apiKey ? '***' : 'MISSING',
+  authDomain: firebaseConfig.authDomain,
+  projectId: firebaseConfig.projectId,
+});
 
 const app = initializeApp(firebaseConfig);
 
