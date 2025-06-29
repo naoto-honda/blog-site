@@ -38,6 +38,7 @@ const Login = () => {
   const [resetLoading, setResetLoading] = useState(false);
   const [resetMessage, setResetMessage] = useState('');
   const [isResetError, setIsResetError] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -98,10 +99,30 @@ const Login = () => {
     setShowResetForm(!showResetForm);
     setResetMessage(''); // Clear message when toggling form
     setResetEmail(''); // Clear email when toggling form
+    setResetSuccess(false); // Reset success state
   };
 
   const handleResetEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setResetEmail(e.target.value);
+  };
+
+  const handleContinueAfterReset = () => {
+    console.log('Continue button clicked - starting reset process');
+
+    // リセットフォームを非表示にして、ログインフォームに戻る
+    setShowResetForm(false);
+    setResetMessage('');
+    setResetEmail('');
+    setResetSuccess(false);
+    setIsResetError(false);
+
+    // フォームの状態をリセット
+    setFormData({
+      email: '',
+      password: '',
+    });
+
+    console.log('Continue button - state reset completed');
   };
 
   const handleSendResetEmail = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -114,44 +135,20 @@ const Login = () => {
     setResetLoading(true);
     setResetMessage('');
     setIsResetError(false);
+    setResetSuccess(false);
 
     console.log('Sending password reset email to:', resetEmail);
 
     try {
-      // アクションURLを指定してパスワードリセットメールを送信
-      const baseUrl = window.location.origin;
-      const actionCodeSettings = {
-        url: `${baseUrl}/reset-password`, // リセットページにリダイレクト
-        handleCodeInApp: false,
-        // iOS/Androidアプリでの処理を無効化
-        iOS: {
-          bundleId: 'com.example.blogapp',
-        },
-        android: {
-          packageName: 'com.example.blogapp',
-          installApp: true,
-          minimumVersion: '12',
-        },
-        // 動的リンクの設定
-        dynamicLinkDomain: undefined,
-      };
-
-      try {
-        // まずアクションURL付きで試行
-        await sendPasswordResetEmail(auth, resetEmail, actionCodeSettings);
-      } catch (actionUrlError: any) {
-        console.warn('Action URL failed, trying without:', actionUrlError);
-        // アクションURLなしで再試行
-        await sendPasswordResetEmail(auth, resetEmail);
-      }
+      // シンプルなパスワードリセットメール送信（アクションURLなし）
+      await sendPasswordResetEmail(auth, resetEmail);
 
       console.log('Password reset email sent successfully');
       setResetMessage(
         'パスワード再設定用のメールを送信しました。メールボックスと迷惑メールフォルダをご確認ください。'
       );
       setIsResetError(false);
-      // Optionally hide the form after successful submission
-      // setShowResetForm(false);
+      setResetSuccess(true);
       setResetEmail(''); // Clear the input field
     } catch (error: any) {
       console.error('Password reset error:', error);
@@ -195,6 +192,7 @@ const Login = () => {
         );
       }
       setIsResetError(true);
+      setResetSuccess(false);
     } finally {
       setResetLoading(false);
     }
@@ -371,24 +369,6 @@ const Login = () => {
             </Box>
 
             <form onSubmit={handleSendResetEmail}>
-              <TextField
-                label="登録したメールアドレス"
-                name="resetEmail"
-                type="email"
-                fullWidth
-                margin="normal"
-                value={resetEmail}
-                onChange={handleResetEmailChange}
-                required
-                placeholder="example@email.com"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    '&:hover fieldset': {
-                      borderColor: '#1976d2',
-                    },
-                  },
-                }}
-              />
               {resetMessage && (
                 <Alert
                   severity={isResetError ? 'error' : 'success'}
@@ -398,41 +378,86 @@ const Login = () => {
                   {resetMessage}
                 </Alert>
               )}
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                sx={{
-                  mt: 2,
-                  mb: 2,
-                  py: 1.5,
-                  backgroundColor: '#1976d2',
-                  '&:hover': {
-                    backgroundColor: '#1565c0',
-                  },
-                  '&:disabled': {
-                    backgroundColor: '#bdbdbd',
-                  },
-                }}
-                disabled={resetLoading}
-              >
-                {resetLoading ? (
-                  <>
-                    <span style={{ marginRight: '8px' }}>⏳</span>
-                    送信中...
-                  </>
-                ) : (
-                  <>
-                    <span style={{ marginRight: '8px' }}>📧</span>
-                    リセットメールを送信
-                  </>
-                )}
-              </Button>
+
+              {!resetSuccess ? (
+                <>
+                  <TextField
+                    label="登録したメールアドレス"
+                    name="resetEmail"
+                    type="email"
+                    fullWidth
+                    margin="normal"
+                    value={resetEmail}
+                    onChange={handleResetEmailChange}
+                    required
+                    placeholder="example@email.com"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: '#1976d2',
+                        },
+                      },
+                    }}
+                  />
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      mt: 2,
+                      mb: 2,
+                      py: 1.5,
+                      backgroundColor: '#1976d2',
+                      '&:hover': {
+                        backgroundColor: '#1565c0',
+                      },
+                      '&:disabled': {
+                        backgroundColor: '#bdbdbd',
+                      },
+                    }}
+                    disabled={resetLoading}
+                  >
+                    {resetLoading ? (
+                      <>
+                        <span style={{ marginRight: '8px' }}>⏳</span>
+                        送信中...
+                      </>
+                    ) : (
+                      <>
+                        <span style={{ marginRight: '8px' }}>📧</span>
+                        リセットメールを送信
+                      </>
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  type="button"
+                  variant="contained"
+                  fullWidth
+                  onClick={handleContinueAfterReset}
+                  sx={{
+                    mt: 2,
+                    mb: 2,
+                    py: 1.5,
+                    backgroundColor: '#4caf50',
+                    '&:hover': {
+                      backgroundColor: '#45a049',
+                    },
+                    cursor: 'pointer',
+                    zIndex: 1,
+                  }}
+                >
+                  <span style={{ marginRight: '8px' }}>✅</span>
+                  Continue
+                </Button>
+              )}
+
               <Box sx={{ textAlign: 'center' }}>
                 <Link
                   component="button"
                   type="button"
-                  onClick={handleToggleResetForm}
+                  onClick={handleContinueAfterReset}
                   underline="hover"
                   sx={{
                     color: '#666',
