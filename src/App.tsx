@@ -6,6 +6,7 @@ import { PrivateRoute } from './components/PrivateRoute';
 import ScrollToTop from './components/ScrollToTop';
 import { useAuth } from './hooks/redux';
 import About from './pages/About';
+import AdminContacts from './pages/AdminContacts';
 import ArticleDetail from './pages/ArticleDetail';
 import Articles from './pages/Articles';
 import Contact from './pages/Contact';
@@ -113,6 +114,17 @@ const AppContent = () => {
                 <>
                   <Header />
                   <Contact />
+                </>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin-contacts"
+            element={
+              <PrivateRoute>
+                <>
+                  <Header />
+                  <AdminContacts />
                 </>
               </PrivateRoute>
             }
